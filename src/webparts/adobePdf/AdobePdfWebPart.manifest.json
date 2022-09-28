@@ -1,0 +1,27 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "1f2957c7-0d05-4be2-9e3c-40db06011cfe",
+  "alias": "AdobePdfWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+ 
+  "requiresCustomScript": false,
+  "supportsFullBleed": true,
+  "supportedHosts": ["SharePointWebPart","SharePointFullPage"],
+
+  "preconfiguredEntries": [{
+    "groupId": "cf066440-0614-43d6-98ae-0b31cf14c7c3", 
+    "group": { "default": "Other" },
+    "title": { "default": "Adobe PDF Viewer web part" },
+    "description": { "default": "PDF Viewer web part for SharePoint. Requires Adobe PDF Embed API client ID. See https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api" },
+    "officeFabricIconFontName": "PDF",
+    "properties": {
+      "description": "Adobe PDF Viewer web part",
+      "dcclientid": "",
+      "pdfheight": "360"
+    }
+  }]
+}

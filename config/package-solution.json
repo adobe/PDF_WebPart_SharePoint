@@ -1,0 +1,21 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "Adobe PDF Viewer web part for SharePoint Online",
+    "id": "154e7cca-ed3f-45be-af8f-f729d4e80a7b",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "Adobe",
+      "websiteUrl": "https://www.adobe.com",
+      "privacyUrl": "https://www.adobe.com/privacy.html",
+      "termsOfUseUrl": "",
+      "mpnId": ""
+    }
+  },
+  "paths": {
+    "zippedPackage": "solution/adobe-pdf-spfx-web-part.sppkg"
+  }
+}
