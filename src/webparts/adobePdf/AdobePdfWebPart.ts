@@ -16,7 +16,8 @@ import { PropertyFieldPassword } from '@pnp/spfx-property-controls/lib/PropertyF
 import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField,
-  PropertyPaneSlider
+  PropertyPaneSlider,
+  PropertyPaneChoiceGroup
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { escape } from '@microsoft/sp-lodash-subset';
@@ -29,6 +30,7 @@ export interface IAdobePdfWebPartProps {
   description: string;
   dcclientid: string;
   pdfheight: number;
+  pageView: string;
   filePickerResult: IFilePickerResult;
 }
 
@@ -44,6 +46,7 @@ public render(): void {
  const uniqueDivId:string = "myAdobePDF" + Math.floor(Math.random()*1000) + Date.now();
  const PDFheight:number = this.properties.pdfheight;
  const DCclientid:string = this.properties.dcclientid.substring(0,33);
+ const defaultPageView:string = this.properties.pageView;
  let FilePickerResultUrl:string = "";
  let FilePickerResultFile:string = "";
 
@@ -111,7 +114,7 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
    content:{location: {url: FilePickerResultUrl}},
    metaData:{fileName: FilePickerResultFile}
  }, 
- {defaultViewMode: "FIT_WIDTH", showAnnotationTools: false});
+ {defaultViewMode: defaultPageView, showAnnotationTools: false});
 
  }
 
@@ -132,11 +135,11 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
       pages: [
         {
           header: {
-            description: "Adobe PDF Embed API client ID necessary - see https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api"
+            description: "Displays a PDF that is stored on this SharePoint site."
           },
           groups: [
             {
-              groupName: "Settings",
+              groupName: "Active document",
               groupFields: [
                 PropertyFieldFilePicker('filePicker', {
                   context: this.context as any,
@@ -146,11 +149,13 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
                   onSave: (e: IFilePickerResult) => { this.properties.filePickerResult = e;  },
                   onChanged: (e: IFilePickerResult) => { this.properties.filePickerResult = e; },
                   key: "filePickerId",
-                  buttonLabel: "Select a PDF",
-                  label: "Document Selection",
+                  buttonLabel: "Browse",
+                  label: "PDF documents on this site",
                   hideWebSearchTab:true,
                   hideStockImages:true,
                   hideOneDriveTab:true,
+                  hideLocalUploadTab:true,
+                  hideLinkUploadTab:true,
                   checkIfFileExists:true,
                   required:true,
                   accepts: ["pdf"]                  
@@ -162,12 +167,21 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
               }),
                 PropertyPaneSlider('pdfheight',{  
                   label:"Height (in px)",  
-                  min:200,  
-                  max:800,  
-                  value:360,  
+                  min:400,  
+                  max:700,  
+                  value:500,  
                   showValue:true,  
-                  step:1                
-                })
+                  step:10                
+                }),
+                PropertyPaneChoiceGroup('pageView', {
+                  label: 'Default page view',
+                  options: [
+                   { key: 'SINGLE_PAGE', text: 'SINGLE_PAGE', checked: true},
+                   { key: 'FIT_PAGE', text: 'FIT_PAGE'},
+                   { key: 'FIT_WIDTH', text: 'FIT_WIDTH'},
+                   { key: 'TWO_COLUMN', text: 'TWO_COLUMN'}
+                 ]
+               })
               ]
             }
           ]

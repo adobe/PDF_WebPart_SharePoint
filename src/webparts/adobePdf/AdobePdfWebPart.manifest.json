@@ -16,12 +16,13 @@
     "groupId": "cf066440-0614-43d6-98ae-0b31cf14c7c3", 
     "group": { "default": "Other" },
     "title": { "default": "Adobe PDF Viewer web part" },
-    "description": { "default": "PDF Viewer web part for SharePoint. Requires Adobe PDF Embed API client ID. See https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api" },
+    "description": { "default": "Displays a PDF that is stored on this SharePoint site." },
     "officeFabricIconFontName": "PDF",
     "properties": {
       "description": "Adobe PDF Viewer web part",
       "dcclientid": "",
-      "pdfheight": "360"
+      "pdfheight": "500",
+      "pageView": "SINGLE_PAGE"
     }
   }]
 }
