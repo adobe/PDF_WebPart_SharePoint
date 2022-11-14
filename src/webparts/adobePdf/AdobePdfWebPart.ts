@@ -12,10 +12,12 @@ import PnPTelemetry from "@pnp/telemetry-js";
 
 import { PropertyFieldFilePicker, IPropertyFieldFilePickerProps, IFilePickerResult } from "@pnp/spfx-property-controls/lib/PropertyFieldFilePicker";
 import { PropertyFieldPassword } from '@pnp/spfx-property-controls/lib/PropertyFieldPassword';
+import { PropertyPaneWebPartInformation } from '@pnp/spfx-property-controls/lib/PropertyPaneWebPartInformation';
 
 import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField,
+  PropertyPaneLabel,
   PropertyPaneSlider,
   PropertyPaneChoiceGroup
 } from '@microsoft/sp-property-pane';
@@ -45,7 +47,7 @@ public render(): void {
 
  const uniqueDivId:string = "myAdobePDF" + Math.floor(Math.random()*1000) + Date.now();
  const PDFheight:number = this.properties.pdfheight;
- const DCclientid:string = this.properties.dcclientid.substring(0,33);
+ const DCclientid:string = this.properties.dcclientid.substring(0,32);
  const defaultPageView:string = this.properties.pageView;
  let FilePickerResultUrl:string = "";
  let FilePickerResultFile:string = "";
@@ -75,9 +77,8 @@ public render(): void {
 
   `;
  }
-  
 
-// define loadScript function
+ 
 function loadScript(scriptUrl) {
   let script = document.createElement('script');
   script.src = scriptUrl;
@@ -90,21 +91,22 @@ function loadScript(scriptUrl) {
   });
 }
 
-// use loadScript
-loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
-  .then(() => {
-    let adobeDC = window.AdobeDC; 
-    if (adobeDC && adobeDC.View) {
-      displayPDF();
-    } else {
-     document.addEventListener("adobe_dc_view_sdk.ready", () => displayPDF());
-     }
+if ((this.properties.filePickerResult != null) && (DCclientid.length === 32))
+{
+   loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
+     .then(() => {
+       let adobeDC = window.AdobeDC; 
+       if (adobeDC && adobeDC.View) {
+         displayPDF();
+       } else {
+        document.addEventListener("adobe_dc_view_sdk.ready", () => displayPDF());
+        }
 
-  })
-  .catch(() => {
-    console.error('Loading Adobe DC Main script failed.');
-  });
-
+     })
+     .catch(() => {
+       console.error('Loading Adobe DC Main script failed.');
+     });
+}
 
  function displayPDF(): void {
 
@@ -126,7 +128,7 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
   }
 
   protected get disableReactivePropertyChanges(): boolean {
-    return true;
+    return false;
   }
 
 
@@ -139,8 +141,11 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
           },
           groups: [
             {
-              groupName: "Active document",
+              groupName: "",
               groupFields: [
+                PropertyPaneLabel('', {  
+                  text:'Active document'  
+              }),
                 PropertyFieldFilePicker('filePicker', {
                   context: this.context as any,
                   filePickerResult: this.properties.filePickerResult,
@@ -149,8 +154,8 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
                   onSave: (e: IFilePickerResult) => { this.properties.filePickerResult = e;  },
                   onChanged: (e: IFilePickerResult) => { this.properties.filePickerResult = e; },
                   key: "filePickerId",
-                  buttonLabel: "Browse",
-                  label: "PDF documents on this site",
+                  buttonLabel: "Select a PDF document on this site",
+                  label: "",
                   hideWebSearchTab:true,
                   hideStockImages:true,
                   hideOneDriveTab:true,
@@ -159,12 +164,21 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
                   checkIfFileExists:true,
                   required:true,
                   accepts: ["pdf"]                  
-              }), 
+              }),
               PropertyFieldPassword("dcclientid", {
                 key: "clientId",
-                label: "Adobe PDF Embed API client ID",
+                label: "Adobe PDF Embed client ID",
                 value: this.properties.dcclientid
               }),
+              PropertyPaneWebPartInformation({
+                description: `Generate a client ID from <a href="https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api" target="_blank">here</a>, then copy and paste the ID. `,
+                key: 'webPartInfoId1'
+              }) 
+              ]
+            },
+            {
+              groupName: "",
+              groupFields: [
                 PropertyPaneSlider('pdfheight',{  
                   label:"Height (in px)",  
                   min:400,  
@@ -172,16 +186,25 @@ loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
                   value:500,  
                   showValue:true,  
                   step:10                
-                }),
+                }), 
                 PropertyPaneChoiceGroup('pageView', {
                   label: 'Default page view',
                   options: [
-                   { key: 'SINGLE_PAGE', text: 'SINGLE_PAGE', checked: true},
+                   { key: 'SINGLE_PAGE', text: 'SINGLE_PAGE'},
                    { key: 'FIT_PAGE', text: 'FIT_PAGE'},
-                   { key: 'FIT_WIDTH', text: 'FIT_WIDTH'},
+                   { key: 'FIT_WIDTH', text: 'FIT_WIDTH', checked: true},
                    { key: 'TWO_COLUMN', text: 'TWO_COLUMN'}
                  ]
                })
+              ]
+            },
+            {
+              groupName: "",
+              groupFields: [
+               PropertyPaneWebPartInformation({
+                description: `<a href="https://community.adobe.com/" target="_blank">Need help?</a> `,
+                key: 'webPartInfoId2'
+              }) 
               ]
             }
           ]

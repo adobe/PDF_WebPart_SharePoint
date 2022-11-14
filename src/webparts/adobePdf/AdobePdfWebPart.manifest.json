@@ -22,7 +22,7 @@
       "description": "Adobe PDF Viewer web part",
       "dcclientid": "",
       "pdfheight": "500",
-      "pageView": "SINGLE_PAGE"
+      "pageView": "FIT_WIDTH"
     }
   }]
 }
