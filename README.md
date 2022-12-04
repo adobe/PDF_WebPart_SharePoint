@@ -2,7 +2,7 @@
 
 ## Summary
 
-This project contains sample code that implements the core capabilities of the Adobe PDF Embed API for use in a Microsoft SharePoint Framework (SPFx) web part. The Adobe PDF Viewer web part leverages Adobe's PDF viewer. It has been built for use in "site pages" in Microsoft SharePoint Online, and it can render PDF's stored within SharePoint document libraries without losing SharePoint site navigation. Users can easily print or download a PDF from the top bar in the web part. The default page view is configurable in the web part settings. Note that the Adobe PDF SINGLE_PAGE view mode uses the swipe gesture and is optimized for mobile browsers. 
+This project contains sample code that implements the core capabilities of the Adobe PDF Embed API for use in a Microsoft SharePoint Framework (SPFx) web part. The Adobe PDF Viewer web part leverages Adobe's PDF viewer. It has been built for use in "site pages" in Microsoft SharePoint Online, and it can render PDF's stored within SharePoint document libraries without losing SharePoint site navigation. Users can easily print or download a PDF from the top bar in the web part. The default view mode is configurable in the web part settings. Note that the Adobe PDF SINGLE_PAGE view mode uses the swipe gesture and is optimized for mobile browsers. 
 
 ![Image of a cat in a PDF document displayed on a SharePoint Online site page](PDF-demo-screenshot.png "Screenshot of PDF Viewer web part on SharePoint Online site page")
 
