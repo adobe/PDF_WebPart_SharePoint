@@ -20,9 +20,15 @@ SPFx 1.12.1
 
 ## Prerequisites
 
-The PDF Viewer web part requires a client ID which can be created by following the steps here: https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api. Configure the domain associated with the Adobe client ID as sharepoint.com or MSTENANTNAME.sharepoint.com.
+The PDF Viewer web part requires an Adobe client ID which can be created by following the steps here: https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api. Configure the domain associated with the Adobe client ID as sharepoint.com or MSTENANTNAME.sharepoint.com.
 
 This project was built for and tested with Node.js version v14.19.0
+
+
+## Recommendations for use in production
+
+- In the main pane that appears with no PDF document being selected, consider adding a hyperlink pointing to an article to help users get started. 
+- In the guidance supporting the web part, consider how the client ID should be managed. E.g., a SharePoint site owner or site member might manage the client ID for all PDFs on their site. 
 
 
 ## License
