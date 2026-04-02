@@ -1,215 +1,257 @@
-export {};
-declare global {
-  interface Window {
-      AdobeDC: any;
-  }
-}
-
+/**
+ * AdobePdfWebPart.ts
+ *
+ * Adobe PDF Viewer web part for Microsoft SharePoint Online.
+ * Modernized for SPFx 1.22.x / Node.js 22 LTS / TypeScript 5.8 / Heft.
+ *
+ * This version has no third-party runtime dependencies, the property
+ * pane file picker is implemented natively using SPHttpClient + DOM.
+ *
+ * Copyright 2022-2026 Adobe – MIT License
+ */
 
 import { Version } from '@microsoft/sp-core-library';
-
-import PnPTelemetry from "@pnp/telemetry-js";
-
-import { PropertyFieldFilePicker, IPropertyFieldFilePickerProps, IFilePickerResult } from "@pnp/spfx-property-controls/lib/PropertyFieldFilePicker";
-import { PropertyFieldPassword } from '@pnp/spfx-property-controls/lib/PropertyFieldPassword';
-import { PropertyPaneWebPartInformation } from '@pnp/spfx-property-controls/lib/PropertyPaneWebPartInformation';
-
 import {
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField,
-  PropertyPaneLabel,
-  PropertyPaneSlider,
-  PropertyPaneChoiceGroup
+  type IPropertyPaneConfiguration,
+  type IPropertyPaneField,
+  type IPropertyPaneCustomFieldProps,
+  PropertyPaneFieldType,
+  PropertyPaneDropdown,
+  type IPropertyPaneDropdownOption
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import { escape } from '@microsoft/sp-lodash-subset';
+import { SPComponentLoader } from '@microsoft/sp-loader';
+
+import {
+  PropertyPaneFilePicker,
+  type IFilePickerResult
+} from './propertyPane/PropertyPaneFilePicker';
 
 import styles from './AdobePdfWebPart.module.scss';
 import * as strings from 'AdobePdfWebPartStrings';
 
+/* ------------------------------------------------------------------ */
+/*  Interfaces                                                         */
+/* ------------------------------------------------------------------ */
 
 export interface IAdobePdfWebPartProps {
-  description: string;
-  dcclientid: string;
-  pdfheight: number;
-  pageView: string;
-  filePickerResult: IFilePickerResult;
+  /** Adobe PDF Embed API client ID */
+  clientId: string;
+  /** Selected PDF file result */
+  filePickerResult: IFilePickerResult | undefined;
+  /** Adobe Embed view mode */
+  viewMode: string;
 }
+
+/** Adobe DC View SDK types */
+interface IAdobeDCView {
+  previewFile(
+      content: { content: { location: { url:string}}; metaData: { fileName: string }},
+      options: { embedMode: string; showDownloadPDF: boolean; showPrintPDF: boolean }
+  ): void;
+}
+
+
+interface IAdobeDCViewConstructor {
+  new (config: { clientId: string; divId: string }): IAdobeDCView;
+}
+
+declare global {
+  interface Window {
+    AdobeDC?: { View?: IAdobeDCViewConstructor };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Web Part                                                           */
+/* ------------------------------------------------------------------ */
 
 export default class AdobePdfWebPart extends BaseClientSideWebPart<IAdobePdfWebPartProps> {
 
+  private static readonly ADOBE_SDK_URL =
+    'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 
-public render(): void {  
+  private static readonly EMBED_MODES: IPropertyPaneDropdownOption[] = [
+    { key: 'FULL_WINDOW',     text: 'Full Window' },
+    { key: 'SIZED_CONTAINER', text: 'Sized Container' },
+    { key: 'IN_LINE',         text: 'In-Line' },
+    { key: 'LIGHT_BOX',       text: 'Light Box' }
+  ];
 
+  private static readonly VIEWER_DIV_ID = 'adobe-dc-view';
 
- const telemetry = PnPTelemetry.getInstance();
- telemetry.optOut();
+  /* ---- lifecycle ------------------------------------------------- */
 
- const uniqueDivId:string = "myAdobePDF" + Math.floor(Math.random()*1000) + Date.now();
- const PDFheight:number = this.properties.pdfheight;
- const DCclientid:string = this.properties.dcclientid.substring(0,32);
- const defaultPageView:string = this.properties.pageView;
- let FilePickerResultUrl:string = "";
- let FilePickerResultFile:string = "";
+  public render(): void {
+    this.domElement.innerHTML = this._buildHtml();
 
- if ((this.properties.filePickerResult != null) && (DCclientid.length === 32)) {
-  FilePickerResultUrl = this.properties.filePickerResult.fileAbsoluteUrl;
-  FilePickerResultFile = this.properties.filePickerResult.fileName;
-  this.domElement.innerHTML = `
-
-  <div id="` + uniqueDivId + `" style="height: `+ PDFheight + `px; box-shadow: 2px 2px 6px 2px #dadada;"></div>
-
-`;
- }
- else {
-
-  this.domElement.innerHTML = `
-
-  <div class="${ styles.adobePdf }">
-  <div class="${ styles.container }">
-    <div class="${ styles.row }">
-      <div class="${ styles.column }"> <span class="${ styles.title }">`
-+ this.properties.description + `</span><br><br><span class="${ styles.description }"><a target="_blank" href="https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api"> Have you configured a valid Adobe PDF Embed API client ID yet?</a><br> When you're ready, open the web part settings pane to securely paste the client ID.</span> 
-</div>
-    </div>
-  </div>
-</div>
-
-  `;
- }
-
- 
-function loadScript(scriptUrl) {
-  let script = document.createElement('script');
-  script.src = scriptUrl;
-  script.defer = true;
-  document.body.appendChild(script);
-  
-  return new Promise((res, rej) => {
-    script.onload  = res;
-    script.onerror = rej;
-  });
-}
-
-if ((this.properties.filePickerResult != null) && (DCclientid.length === 32))
-{
-   loadScript('https://documentservices.adobe.com/view-sdk/viewer.js')
-     .then(() => {
-       let adobeDC = window.AdobeDC; 
-       if (adobeDC && adobeDC.View) {
-         displayPDF();
-       } else {
-        document.addEventListener("adobe_dc_view_sdk.ready", () => displayPDF());
-        }
-
-     })
-     .catch(() => {
-       console.error('Loading Adobe DC Main script failed.');
-     });
-}
-
- function displayPDF(): void {
-
-   let adobeDC = window.AdobeDC; 
-   let adobeDCView = new adobeDC.View({clientId: DCclientid , divId: uniqueDivId});
-   adobeDCView.previewFile({
-   content:{location: {url: FilePickerResultUrl}},
-   metaData:{fileName: FilePickerResultFile}
- }, 
- {defaultViewMode: defaultPageView, showAnnotationTools: false});
-
- }
-
-}
-
+    if (this.properties.clientId && this.properties.filePickerResult?.fileAbsoluteUrl) {
+      this._loadAdobeSdk()
+        .then(() => this._renderPdf())
+        .catch((err: Error) => {
+          console.error('[AdobePdfWebPart] SDK load error:', err);
+          this._showError(strings.SdkLoadError);
+        });
+    }
+  }
 
   protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
 
-  protected get disableReactivePropertyChanges(): boolean {
-    return false;
-  }
-
+  /* ---- property pane -------------------------------------------- */
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
     return {
       pages: [
         {
-          header: {
-            description: "Displays a PDF that is stored on this SharePoint site."
-          },
+          header: { description: strings.PropertyPaneDescription },
           groups: [
             {
-              groupName: "",
+              groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneLabel('', {  
-                  text:'Active document'  
-              }),
-                PropertyFieldFilePicker('filePicker', {
-                  context: this.context as any,
-                  filePickerResult: this.properties.filePickerResult,
-                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
-                  properties: this.properties,
-                  onSave: (e: IFilePickerResult) => { this.properties.filePickerResult = e;  },
-                  onChanged: (e: IFilePickerResult) => { this.properties.filePickerResult = e; },
-                  key: "filePickerId",
-                  buttonLabel: "Select a PDF document on this site",
-                  label: "",
-                  hideWebSearchTab:true,
-                  hideStockImages:true,
-                  hideOneDriveTab:true,
-                  hideLocalUploadTab:true,
-                  hideLinkUploadTab:true,
-                  checkIfFileExists:true,
-                  required:true,
-                  accepts: ["pdf"]                  
-              }),
-              PropertyFieldPassword("dcclientid", {
-                key: "clientId",
-                label: "Adobe PDF Embed client ID",
-                value: this.properties.dcclientid
-              }),
-              PropertyPaneWebPartInformation({
-                description: `Generate a client ID from <a href="https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api" target="_blank">here</a>, then copy and paste the ID. `,
-                key: 'webPartInfoId1'
-              }) 
-              ]
-            },
-            {
-              groupName: "",
-              groupFields: [
-                PropertyPaneSlider('pdfheight',{  
-                  label:"Height (in px)",  
-                  min:400,  
-                  max:700,  
-                  value:500,  
-                  showValue:true,  
-                  step:10                
-                }), 
-                PropertyPaneChoiceGroup('pageView', {
-                  label: 'Default page view',
-                  options: [
-                   { key: 'SINGLE_PAGE', text: 'SINGLE_PAGE'},
-                   { key: 'FIT_PAGE', text: 'FIT_PAGE'},
-                   { key: 'FIT_WIDTH', text: 'FIT_WIDTH', checked: true},
-                   { key: 'TWO_COLUMN', text: 'TWO_COLUMN'}
-                 ]
-               })
-              ]
-            },
-            {
-              groupName: "",
-              groupFields: [
-               PropertyPaneWebPartInformation({
-                description: `<a href="https://community.adobe.com/" target="_blank">Need help?</a> `,
-                key: 'webPartInfoId2'
-              }) 
+                {
+                  type: PropertyPaneFieldType.Custom,
+                  targetProperty: 'clientId',
+                  properties: {
+                    key: 'clientIdField',
+                    onRender: (elem: HTMLElement) => {
+                      elem.innerHTML = `
+                        <label style="display:block;font-weight:600;font-size:14px;padding-bottom:5px;font-family:'Segoe UI',sans-serif">
+                          ${strings.ClientIdFieldLabel}
+                        </label>
+                        <input type="password" value="${this.properties.clientId || ''}"
+                          style="width:100%;padding:6px 8px;border:1px solid #8a8886;border-radius:4px;font-size:13px;font-family:'Segoe UI',sans-serif;box-sizing:border-box"
+                          autocomplete="off" />
+                        <p style="font-size:11px;color:#605e5c;margin:4px 0 0;font-family:'Segoe UI',sans-serif">
+                          ${strings.ClientIdFieldDescription}
+                        </p>`;
+                      elem.querySelector('input')!.addEventListener('input', (e) => {
+                        this.properties.clientId = (e.target as HTMLInputElement).value;
+                        this.render();
+                      });
+                    },
+                    onDispose: () => {}
+                  }
+                } as IPropertyPaneField<IPropertyPaneCustomFieldProps>,
+                PropertyPaneFilePicker('filePickerResult', {
+                  key: 'filePickerId',
+                  label: strings.FilePickerLabel,
+                  buttonLabel: strings.FilePickerButtonLabel,
+                  accepts: ['.pdf'],
+                  value: this.properties.filePickerResult,
+                  webAbsoluteUrl: this.context.pageContext.web.absoluteUrl,
+                  spHttpClient: this.context.spHttpClient,
+                  onSelect: (result: IFilePickerResult) => {
+                    this.properties.filePickerResult = result;
+                    this.render();
+                    // Force property pane to re-render so it shows the new filename
+                    this.context.propertyPane.refresh();
+                  }
+                }),
+                PropertyPaneDropdown('viewMode', {
+                  label: strings.ViewModeFieldLabel,
+                  options: AdobePdfWebPart.EMBED_MODES,
+                  selectedKey: this.properties.viewMode ?? 'FULL_WINDOW'
+                })
               ]
             }
           ]
         }
       ]
     };
+  }
+
+  /* ---- private helpers ------------------------------------------ */
+
+  private _buildHtml(): string {
+    const fileName = this.properties.filePickerResult?.fileName ?? '';
+    const hasFile = !!this.properties.filePickerResult?.fileAbsoluteUrl;
+    const hasClientId = !!this.properties.clientId;
+
+    if (!hasClientId) {
+      return `
+        <div class="${styles.adobePdf}">
+          <div class="${styles.container}">
+            <p class="${styles.message}">${strings.MissingClientId}</p>
+          </div>
+        </div>`;
+    }
+
+    if (!hasFile) {
+      return `
+        <div class="${styles.adobePdf}">
+          <div class="${styles.container}">
+            <p class="${styles.message}">${strings.MissingFile}</p>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="${styles.adobePdf}">
+        <div class="${styles.header}">
+          <span class="${styles.fileName}">${this._escapeHtml(fileName)}</span>
+        </div>
+        <div id="${AdobePdfWebPart.VIEWER_DIV_ID}" class="${styles.viewer}"></div>
+      </div>`;
+  }
+
+ private async _loadAdobeSdk(): Promise<void> {
+    if (window.AdobeDC?.View) {
+      return Promise.resolve();
+    }
+
+    await SPComponentLoader.loadScript(
+     AdobePdfWebPart.ADOBE_SDK_URL,
+     { globalExportsName: 'AdobeDC' }
+   );
+   return await new Promise<void>((resolve) => {
+     if (window.AdobeDC?.View) {
+       resolve();
+     } else {
+       document.addEventListener('adobe_dc_view_sdk.ready', () => resolve(), { once: true });
+     }
+   });
+  }
+
+
+  private _renderPdf(): void {
+    const fileUrl = this.properties.filePickerResult?.fileAbsoluteUrl;
+    const fileName = this.properties.filePickerResult?.fileName ?? 'document.pdf';
+
+    if (!fileUrl || !window.AdobeDC?.View) return;
+
+    const downloadUrl = fileUrl;
+
+    const adobeDCView = new window.AdobeDC.View({
+      clientId: this.properties.clientId,
+      divId: AdobePdfWebPart.VIEWER_DIV_ID
+    });
+
+    adobeDCView.previewFile(
+      {
+        content:  { location: { url: downloadUrl } },
+        metaData: { fileName }
+      },
+      {
+        embedMode:       this.properties.viewMode ?? 'FULL_WINDOW',
+        showDownloadPDF: true,
+        showPrintPDF:    true
+      }
+    );
+  }
+
+  private _showError(message: string): void {
+    const viewer = this.domElement.querySelector(`#${AdobePdfWebPart.VIEWER_DIV_ID}`);
+    if (viewer) {
+      viewer.innerHTML = `<p class="${styles.message}">${this._escapeHtml(message)}</p>`;
+    }
+  }
+
+  private _escapeHtml(text: string): string {
+    const map: Record<string, string> = {
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, (ch) => map[ch] ?? ch);
   }
 }

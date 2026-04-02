@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@microsoft/rush-stack-compiler-3.7/includes/tsconfig-web.json",
+  "extends": "./node_modules/@microsoft/spfx-web-build-rig/profiles/default/tsconfig-base.json",
   "compilerOptions": {
     "target": "es5",
     "allowJs": true, 
@@ -23,10 +23,8 @@
       "webpack-env"
     ],
     "lib": [
-      "es5",
-      "dom",
-      "es2015.collection",
-      "es2015.promise"
+      "es2017",
+      "dom"
     ]
   },
   "include": [

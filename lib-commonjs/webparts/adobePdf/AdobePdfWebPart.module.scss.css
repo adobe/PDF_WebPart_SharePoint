@@ -1,0 +1,50 @@
+/* themed tokens */
+/*
+  Your use of the content in the files referenced here is subject to the terms of the license at http://aka.ms/fabric-assets-license
+*/
+.adobePdf {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+.adobePdf .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 20px;
+  background-color: "[theme:neutralLighterAlt, default: #faf9f8]";
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-radius: 4px;
+}
+.adobePdf .header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: "[theme:neutralLighter, default: #f3f2f1]";
+  border-bottom: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-radius: 4px 4px 0 0;
+}
+.adobePdf .fileName {
+  font-weight: 600;
+  font-size: 14px;
+  color: "[theme:neutralPrimary, default: #323130]";
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adobePdf .viewer {
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}
+.adobePdf .message {
+  font-size: 16px;
+  color: "[theme:neutralSecondary, default: #605e5c]";
+  text-align: center;
+  padding: 40px 20px;
+}

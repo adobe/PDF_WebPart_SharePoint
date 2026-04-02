@@ -1,14 +1,16 @@
 # Adobe PDF Viewer web part for Microsoft SharePoint Online
+## Modernized for MSFT SPFx 1.22.x / Node.js 22 LTS / TypeScript 5.8 / Heft.
+## No third-party dependencies.
 
 ## Summary
 
-This project contains sample code that implements the core capabilities of the Adobe PDF Embed API for use in a Microsoft SharePoint Framework (SPFx) web part. The Adobe PDF Viewer web part leverages Adobe's PDF viewer. It has been built for use in "site pages" in Microsoft SharePoint Online, and it can render PDF's stored within SharePoint document libraries without losing SharePoint site navigation. Users can easily print or download a PDF from the top bar in the web part. The default view mode is configurable in the web part settings. Note that the Adobe PDF SINGLE_PAGE view mode uses the swipe gesture and is optimized for mobile browsers. 
+This project contains sample code that implements the core capabilities of the Adobe PDF Embed API for use in a Microsoft SharePoint Framework (SPFx) web part. The Adobe PDF Viewer web part leverages Adobe's PDF viewer. It has been built for use in "site pages" in Microsoft SharePoint Online, and it can render PDF's stored within SharePoint document libraries without losing SharePoint site navigation. Users can easily print or download a PDF from the web part. The default view mode is configurable in the web part settings. 
 
 ![Image of a cat in a PDF document displayed on a SharePoint Online site page](PDF-demo-screenshot.png "Screenshot of PDF Viewer web part on SharePoint Online site page")
 
 ## Used SharePoint Framework Version
 
-SPFx 1.12.1
+SPFx 1.22.x
 
 ## Applies to
 
@@ -20,22 +22,24 @@ SPFx 1.12.1
 
 ## Prerequisites
 
-The PDF Viewer web part requires an Adobe client ID which can be created by following the steps here: https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api. Configure the domain associated with the Adobe client ID as sharepoint.com or MSTENANTNAME.sharepoint.com.
+The PDF Viewer web part requires an Adobe client ID which can be created by following the steps here: https://documentcloud.adobe.com/dc-integration-creation-app-cdn/main.html?api=pdf-embed-api. Configure the domain associated with the Adobe client ID as sharepoint.com or MSTENANTNAME.sharepoint.com. 
 
-This project was built for and tested with Node.js version v14.19.0
+In addition, the URLs https://documentservices.adobe.com and https://acrobatservices.adobe.com need to be added as trusted script sources in Microsoft's SharePoint Online Admin Center. 
+
+This project was built for and tested with Node.js version 22 LTS.
 
 
 ## Recommendations for use in production
 
-- In the main pane that appears with no PDF document being selected, consider adding a hyperlink pointing to an article to help users get started. 
-- In the guidance supporting the web part, consider how the client ID should be managed. E.g., a SharePoint site owner or site member might manage the client ID for all PDFs on their site. 
+- Customize the web part code to meet your production requirements.
+- Customize the web part code to pull the Adobe Embed client ID from a pre-defined, configurable location, e.g. a SharePoint list, in the same Microsoft 365 tenant.
 
 
 ## License
 
 **This project is licensed under the terms of the MIT license.**
 
-Copyright 2022 Adobe
+Copyright 2022-2026 Adobe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -49,17 +53,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 - Clone this repository
 - Ensure that you are at the project folder
-- In the command-line run:
+- In the command line run:
   - **npm install**
-  - **gulp bundle --ship**
-  - **gulp package-solution --ship**
+  - **npm run build**
 
-During the build process it may also be helpful or necessary to run the following:
+During the process it may also be helpful to run the following:
   - npm audit fix (do not use the --force switch)
-  - npx browserslist@latest --update-db
 
-To become familiar with Microsoft's SPFx, you can review the following two Microsoft articles:
-  1) https://docs.microsoft.com/en-us/sharepoint/dev/spfx/toolchain/sharepoint-framework-toolchain
+To become familiar with Microsoft's SPFx and Heft, you can review the following Microsoft articles:
+  1) https://learn.microsoft.com/en-us/sharepoint/dev/spfx/toolchain/sharepoint-framework-toolchain-rushstack-heft
   2) https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/build-a-hello-world-web-part
 
 
