@@ -10,7 +10,7 @@ This project contains sample code that implements the core capabilities of the A
 
 ## Used SharePoint Framework Version
 
-SPFx 1.22.x
+SPFx 1.22.2
 
 ## Applies to
 
@@ -26,7 +26,7 @@ The PDF Viewer web part requires an Adobe client ID which can be created by foll
 
 In addition, the URLs https://documentservices.adobe.com and https://acrobatservices.adobe.com need to be added as trusted script sources in Microsoft's SharePoint Online Admin Center. 
 
-This project was built for and tested with Node.js version 22 LTS.
+This project was built for SPFx 1.22 or newer, and it was tested with Node.js version 22.22.2.
 
 
 ## Recommendations for use in production
